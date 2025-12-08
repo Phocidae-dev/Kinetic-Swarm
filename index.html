@@ -1,0 +1,1963 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>KINETIC SWARM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: #050510;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        .landing {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 50% 0%, #1a1a3e 0%, #050510 70%);
+            z-index: 100;
+        }
+
+        .landing::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+        }
+
+        .orb-bg {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+            filter: blur(60px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .orb-bg:nth-child(1) {
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .orb-bg:nth-child(2) {
+            top: 60%;
+            right: 15%;
+            animation-delay: -2s;
+            background: radial-gradient(circle, rgba(255, 107, 157, 0.3) 0%, transparent 70%);
+        }
+
+        .orb-bg:nth-child(3) {
+            bottom: 20%;
+            left: 30%;
+            animation-delay: -4s;
+            background: radial-gradient(circle, rgba(77, 182, 172, 0.3) 0%, transparent 70%);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #64b5f6 50%, #ff6b9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                filter: brightness(1) drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+            }
+
+            50% {
+                filter: brightness(1.2) drop-shadow(0 0 40px rgba(102, 126, 234, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 3rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .gesture-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            max-width: 600px;
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .gesture-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .gesture-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .gesture-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .gesture-text {
+            flex: 1;
+        }
+
+        .gesture-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #667eea;
+        }
+
+        .gesture-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #enter-xr {
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        #enter-xr:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.6);
+        }
+
+        .status {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+        }
+
+        .mode-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mode-label.active {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .toggle-switch.vr::after {
+            left: 33px;
+            background: #ff6b9d;
+            box-shadow: 0 2px 10px rgba(255, 107, 157, 0.5);
+        }
+
+        .toggle-switch.vr {
+            background: rgba(255, 107, 157, 0.3);
+        }
+
+        .gesture-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="landing" id="landing">
+        <div class="orb-bg"></div>
+        <div class="orb-bg"></div>
+        <div class="orb-bg"></div>
+
+        <h1 class="title">KINETIC</h1>
+        <p class="subtitle">SWARM</p>
+        <p
+            style="color: rgba(255,255,255,0.6); font-size: 0.9rem; max-width: 500px; text-align: center; margin-bottom: 2rem; line-height: 1.5;">
+            Control 150 orbs with your hands.<br>Use gestures to lift, push, freeze and shape the swarm.
+        </p>
+
+        <div
+            style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; max-width: 900px; margin-bottom: 2rem; text-align: left;">
+            <div style="flex: 1; min-width: 280px;">
+                <p
+                    style="color: #667eea; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.1em;">
+                    🙌 SWARM CONTROL</p>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 2.2;">
+                    <div>🙌 <b>LIFT</b> — Palms up to summon orbs</div>
+                    <div>✊ <b>FREEZE</b> — Close fists to stop orbs</div>
+                    <div>💨 <b>PUSH</b> — Thrust forward (aims with hands!)</div>
+                    <div>🧲 <b>PULL</b> — Pull back to recall</div>
+                    <div>💥 <b>EXPLODE</b> — Spread hands quickly</div>
+                    <div>↔️ <b>SPIN</b> — Swipe to change direction</div>
+                </div>
+            </div>
+            <div style="flex: 1; min-width: 240px;">
+                <p
+                    style="color: #ff6b9d; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.1em;">
+                    FINE CONTROL</p>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 2.2;">
+                    <div>👍 <b>THUMB FLICK</b> — Speed up spin</div>
+                    <div>👆 <b>INDEX FLICK</b> — Cycle vertical spread</div>
+                    <div>🖕 <b>MIDDLE FLICK</b> — Slow down spin</div>
+                </div>
+                <p
+                    style="color: #81c784; font-size: 1rem; font-weight: 700; margin: 1.5rem 0 1rem; letter-spacing: 0.1em;">
+                    SHAPE & TILT</p>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 2.2;">
+                    <div>🤲 <b>SIZE</b> — Hands apart = bigger orbit</div>
+                    <div>↕️ <b>Y TILT</b> — Hand heights tilt left/right</div>
+                    <div>↔️ <b>Z TILT</b> — Hands forward/back tilt</div>
+                </div>
+            </div>
+            <div style="flex: 1; min-width: 240px;">
+                <p
+                    style="color: #4db6ac; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.1em;">
+                    DRAW MODE</p>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 2.2;">
+                    <div>👍👍 <b>ENTER</b> — Touch thumbs (1s)</div>
+                    <div>✊✊ <b>EXIT</b> — Make fists (1s)</div>
+                </div>
+                <p style="color: #4db6ac; font-size: 0.8rem; margin-top: 0.8rem; opacity: 0.9;">✨ Orbs mirror your hand
+                    movements!</p>
+            </div>
+        </div>
+
+        <div class="mode-toggle" id="mode-toggle" style="display: none;">
+            <span class="mode-label active" id="mode-ar">🌍 PASSTHROUGH</span>
+            <div class="toggle-switch" id="toggle-switch"></div>
+            <span class="mode-label" id="mode-vr">🎮 IMMERSIVE VR</span>
+        </div>
+
+        <button id="enter-xr">ENTER XR</button>
+        <p class="status" id="status">Checking WebXR support...</p>
+    </div>
+
+    <div class="gesture-hint hidden" id="gesture-hint">
+        <span>🙌</span>
+        <span>✊</span>
+        <span>💨</span>
+        <span>🧲</span>
+        <span>💥</span>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.module.js';
+
+        const CONFIG = {
+            orb: {
+                count: 150,
+                radius: 0.03,
+                glowRadius: 0.045,
+                colors: [0x667eea, 0x64b5f6, 0xff6b9d, 0x4db6ac, 0xffb74d, 0x81c784, 0xba68c8, 0xf06292, 0x4fc3f7, 0xaed581],
+                spawnRadius: 1.2,
+                groundY: 0.04,
+                orbitMinDist: 0.8,
+                orbitMaxDist: 2.0,
+                orbitSpeed: 0.22,
+                liftSpeed: 0.04,
+                approachSpeed: 0.035,
+                fallAccel: 12.0,
+                fallMax: 8.0,
+                bounceDecay: 0.3,
+                minBounceVel: 0.1,
+                centerLag: 0.04,
+                yLag: 0.08,
+                pushForce: 10.0,
+                explodeForce: 8.0,
+                trailLength: 4,
+            },
+            idle: {
+                bobHeight: 0.005,
+                bobSpeed: 2.2,
+                wobble: 0.003,
+            },
+            hand: {
+                liftPalmThreshold: 0.25,
+                dropPalmThreshold: -0.3,
+                dropSpeedThreshold: 0.3,
+                pushThreshold: 1.8,
+                singlePushThreshold: 1.2,
+                pullThreshold: 0.6,
+                singlePullThreshold: 0.5,
+                snapOpenThreshold: 0.10,
+                snapCloseThreshold: 0.035,
+                snapSpeedThreshold: 1.4,
+                explodeThreshold: 1.6,
+                closedThreshold: 0.065,
+                spinChangeThreshold: 0.6,
+                spinAccelThreshold: 0.2,
+                indexFlickThreshold: 0.35,
+            },
+            timing: {
+                gestureCooldown: 0.3,
+                pushCooldown: 0.35,
+                explodeCooldown: 0.5,
+                flickCooldown: 0.3,
+                doubleTapWindow: 0.4,
+                snapThreshold: 0.03,
+                waveThreshold: 0.5,
+            }
+        };
+
+        class SoundManager {
+            constructor() {
+                this.sounds = {};
+                this.loaded = false;
+                this.hum = null;
+                this.audioCtx = null;
+                this.humGain = null;
+                this.isHumming = false;
+            }
+
+            async init() {
+                const soundFiles = {
+                    lift: 'sound/lift.mp3',
+                    freeze: 'sound/freeze.wav',
+                    push: 'sound/push.mp3',
+                    pull: 'sound/pull.mp3',
+                    explode: 'sound/explode.mp3',
+                    drop: 'sound/drop.mp3',
+                    drawEnter: 'sound/enter-draw-mode.mp3',
+                    drawExit: 'sound/exit-draw-mode.mp3',
+                };
+
+                for (const [name, url] of Object.entries(soundFiles)) {
+                    try {
+                        const audio = new Audio(url);
+                        audio.volume = 0.4;
+                        audio.preload = 'auto';
+                        this.sounds[name] = audio;
+                    } catch (e) {
+                        console.warn(`Failed to load sound: ${name}`);
+                    }
+                }
+
+                try {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.humGain = this.audioCtx.createGain();
+                    this.humGain.gain.value = 0;
+                    this.humGain.connect(this.audioCtx.destination);
+                } catch (e) {
+                    console.warn('Failed to create audio context');
+                }
+
+                this.loaded = true;
+            }
+
+            play(name) {
+                if (!this.loaded || !this.sounds[name]) return;
+                const sound = this.sounds[name];
+                sound.currentTime = 0;
+                sound.play().catch(() => { });
+            }
+
+            startHum() {
+                if (!this.audioCtx || this.isHumming) return;
+                try {
+                    if (this.audioCtx.state === 'suspended') {
+                        this.audioCtx.resume();
+                    }
+                    this.hum = this.audioCtx.createOscillator();
+                    this.hum2 = this.audioCtx.createOscillator();
+                    this.hum.type = 'sine';
+                    this.hum2.type = 'sine';
+                    this.hum.frequency.value = 65;
+                    this.hum2.frequency.value = 98;
+
+                    const filter = this.audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 250;
+                    filter.Q.value = 1;
+
+                    const gain2 = this.audioCtx.createGain();
+                    gain2.gain.value = 0.3;
+
+                    this.hum.connect(filter);
+                    this.hum2.connect(gain2);
+                    gain2.connect(filter);
+                    filter.connect(this.humGain);
+                    this.hum.start();
+                    this.hum2.start();
+                    this.isHumming = true;
+                    this.humGain.gain.setTargetAtTime(0.045, this.audioCtx.currentTime, 0.4);
+                } catch (e) { }
+            }
+
+            stopHum() {
+                if (!this.isHumming) return;
+                try {
+                    this.humGain.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.6);
+                    const osc1 = this.hum;
+                    const osc2 = this.hum2;
+                    setTimeout(() => {
+                        try { if (osc1) osc1.stop(); } catch (e) { }
+                        try { if (osc2) osc2.stop(); } catch (e) { }
+                    }, 900);
+                    this.hum = null;
+                    this.hum2 = null;
+                    this.isHumming = false;
+                } catch (e) { }
+            }
+
+            updateHum(spinSpeed, spreadFactor) {
+                if (!this.isHumming || !this.hum || !this.humGain) return;
+                try {
+                    const baseFreq = 55 + Math.abs(spinSpeed) * 8;
+                    const spreadBonus = spreadFactor * 6;
+                    this.hum.frequency.setTargetAtTime(baseFreq + spreadBonus, this.audioCtx.currentTime, 0.15);
+                    if (this.hum2) {
+                        this.hum2.frequency.setTargetAtTime((baseFreq + spreadBonus) * 1.5, this.audioCtx.currentTime, 0.15);
+                    }
+
+                    const baseVol = 0.03 + Math.abs(spinSpeed) * 0.006;
+                    const spreadVol = spreadFactor * 0.008;
+                    const targetVol = Math.min(baseVol + spreadVol, 0.08);
+                    this.humGain.gain.setTargetAtTime(targetVol, this.audioCtx.currentTime, 0.15);
+                } catch (e) { }
+            }
+        }
+
+        class Orb {
+            constructor(scene, index, position) {
+                this.index = index;
+                this.scene = scene;
+                const color = CONFIG.orb.colors[index % CONFIG.orb.colors.length];
+
+                const geo = new THREE.SphereGeometry(CONFIG.orb.radius, 16, 16);
+                const mat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    metalness: 0.5,
+                    roughness: 0.25,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                });
+
+                this.mesh = new THREE.Mesh(geo, mat);
+                this.mesh.position.copy(position);
+                scene.add(this.mesh);
+
+                const glowGeo = new THREE.SphereGeometry(CONFIG.orb.glowRadius, 12, 12);
+                const glowMat = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.15,
+                });
+                this.glow = new THREE.Mesh(glowGeo, glowMat);
+                this.mesh.add(this.glow);
+
+                this.trail = [];
+                this.trailMeshes = [];
+                for (let i = 0; i < CONFIG.orb.trailLength; i++) {
+                    const trailGeo = new THREE.SphereGeometry(CONFIG.orb.radius * (0.8 - i * 0.2), 8, 8);
+                    const trailMat = new THREE.MeshBasicMaterial({
+                        color: color,
+                        transparent: true,
+                        opacity: 0.15 * (1 - i / CONFIG.orb.trailLength),
+                    });
+                    const trailMesh = new THREE.Mesh(trailGeo, trailMat);
+                    trailMesh.visible = false;
+                    scene.add(trailMesh);
+                    this.trailMeshes.push(trailMesh);
+                    this.trail.push(position.clone());
+                }
+
+                this.baseColor = color;
+                this.state = 'ground';
+                this.groundPos = position.clone();
+                this.velocity = new THREE.Vector3();
+                this.fallVelocity = 0;
+                this.targetDrawPos = null;
+
+                this.orbitAngle = (index / CONFIG.orb.count) * Math.PI * 2 + Math.random() * 0.5;
+                this.orbitDist = CONFIG.orb.orbitMinDist + Math.random() * (CONFIG.orb.orbitMaxDist - CONFIG.orb.orbitMinDist);
+                this.baseOrbitDist = this.orbitDist;
+                this.currentDist = this.orbitDist;
+                this.orbitYOffset = (Math.random() - 0.5) * 0.5;
+                this.orbitPhase = Math.random() * Math.PI * 2;
+                this.lagFactor = 0.6 + Math.random() * 0.8;
+                this.personalCenter = new THREE.Vector3();
+
+                this.phase = Math.random() * Math.PI * 2;
+                this.currentY = position.y;
+                this.frozenPos = new THREE.Vector3();
+                this.wallPos = new THREE.Vector3();
+
+                this.verticalFlip = 0;
+                this.flipSpeed = 0;
+            }
+
+            update(dt, swarmState) {
+                this.phase += dt * CONFIG.idle.bobSpeed;
+                this.orbitPhase += dt * 2;
+                this.updateFlip(dt);
+
+                for (let i = this.trail.length - 1; i > 0; i--) {
+                    this.trail[i].copy(this.trail[i - 1]);
+                }
+                this.trail[0].copy(this.mesh.position);
+
+                const showTrail = this.state === 'pushed' || this.state === 'exploded';
+                for (let i = 0; i < this.trailMeshes.length; i++) {
+                    this.trailMeshes[i].visible = showTrail;
+                    if (showTrail) {
+                        this.trailMeshes[i].position.copy(this.trail[i]);
+                    }
+                }
+
+                switch (this.state) {
+                    case 'ground': this._updateGround(dt); break;
+                    case 'lifting': this._updateLifting(dt, swarmState); break;
+                    case 'orbiting': this._updateOrbiting(dt, swarmState); break;
+                    case 'frozen': this._updateFrozen(dt); break;
+                    case 'pushed': this._updatePushed(dt); break;
+                    case 'exploded': this._updateExploded(dt); break;
+                    case 'falling': this._updateFalling(dt); break;
+                    case 'drawing': this._updateDrawing(dt); break;
+                    case 'wall': this._updateWall(dt); break;
+                }
+            }
+
+            _updateGround(dt) {
+                this.mesh.position.x = this.groundPos.x;
+                this.mesh.position.z = this.groundPos.z;
+                this.mesh.position.y = CONFIG.orb.groundY + Math.sin(this.phase * 0.3) * 0.001;
+                this.mesh.rotation.y += dt * 0.2;
+                this.glow.material.opacity = 0.1;
+            }
+
+            _updateLifting(dt, swarmState) {
+                this.personalCenter.copy(swarmState.center);
+                const targetPos = this._getOrbitPosition(swarmState);
+
+                const liftLag = CONFIG.orb.approachSpeed * (0.7 + this.lagFactor * 0.5);
+                const yLiftLag = CONFIG.orb.liftSpeed * (0.8 + this.lagFactor * 0.4);
+                this.mesh.position.x += (targetPos.x - this.mesh.position.x) * liftLag;
+                this.mesh.position.z += (targetPos.z - this.mesh.position.z) * liftLag;
+                this.mesh.position.y += (targetPos.y - this.mesh.position.y) * yLiftLag;
+
+                const distToTarget = this.mesh.position.distanceTo(targetPos);
+                if (distToTarget < 0.12) {
+                    this.state = 'orbiting';
+                }
+
+                this._applyOrbitAnim(dt, swarmState.orbitDirection);
+                this.glow.material.opacity = 0.2 + (1 - Math.min(distToTarget / 2, 1)) * 0.15;
+            }
+
+            _updateOrbiting(dt, swarmState) {
+                this.orbitAngle += CONFIG.orb.orbitSpeed * dt * swarmState.orbitDirection * swarmState.spinMultiplier;
+                this.orbitDist += (this.baseOrbitDist * swarmState.spreadFactor - this.orbitDist) * 0.12;
+
+                this.personalCenter.lerp(swarmState.center, 0.02 * this.lagFactor);
+
+                const targetPos = this._getOrbitPosition(swarmState);
+                const personalTarget = targetPos.clone();
+                personalTarget.x += (this.personalCenter.x - swarmState.center.x);
+                personalTarget.z += (this.personalCenter.z - swarmState.center.z);
+
+                this.mesh.position.lerp(personalTarget, 0.12 + 0.06 * this.lagFactor);
+
+                this._applyOrbitAnim(dt, swarmState.orbitDirection * swarmState.spinMultiplier);
+                const speedGlow = Math.min(Math.abs(swarmState.spinMultiplier) * 0.03, 0.15);
+                this.glow.material.opacity = 0.18 + Math.sin(this.phase * 1.5) * 0.08 + speedGlow;
+            }
+
+            _updateFrozen(dt) {
+                this.mesh.position.lerp(this.frozenPos, 0.1);
+                this.mesh.position.y += Math.sin(this.phase * 0.5) * 0.001;
+                this.mesh.rotation.y += dt * 0.3;
+                this.glow.material.opacity = 0.35 + Math.sin(this.phase * 3) * 0.1;
+            }
+
+            _updatePushed(dt) {
+                this.velocity.y -= CONFIG.orb.fallAccel * dt;
+                this.mesh.position.add(this.velocity.clone().multiplyScalar(dt));
+                this.velocity.x *= 0.985;
+                this.velocity.z *= 0.985;
+
+                if (this.mesh.position.y <= CONFIG.orb.groundY) {
+                    this._handleGroundCollision();
+                }
+
+                const speed = this.velocity.length();
+                this.mesh.rotation.x += dt * speed * 2;
+                this.mesh.rotation.z += dt * speed * 1.8;
+                this.glow.material.opacity = Math.min(0.25 + speed * 0.05, 0.5);
+            }
+
+            _updateExploded(dt) {
+                this.velocity.y -= CONFIG.orb.fallAccel * dt;
+                this.mesh.position.add(this.velocity.clone().multiplyScalar(dt));
+                this.velocity.x *= 0.975;
+                this.velocity.z *= 0.975;
+
+                if (this.mesh.position.y <= CONFIG.orb.groundY) {
+                    this._handleGroundCollision();
+                }
+
+                const speed = this.velocity.length();
+                this.mesh.rotation.x += dt * speed * 2.5;
+                this.mesh.rotation.y += dt * speed * 2;
+                this.glow.material.opacity = Math.min(0.3 + speed * 0.06, 0.6);
+            }
+
+            _updateFalling(dt) {
+                this.fallVelocity += CONFIG.orb.fallAccel * dt;
+                this.fallVelocity = Math.min(this.fallVelocity, CONFIG.orb.fallMax);
+                this.mesh.position.y -= this.fallVelocity * dt;
+
+                if (this.mesh.position.y <= CONFIG.orb.groundY) {
+                    this.mesh.position.y = CONFIG.orb.groundY;
+                    if (this.fallVelocity > CONFIG.orb.minBounceVel) {
+                        this.fallVelocity = -this.fallVelocity * CONFIG.orb.bounceDecay;
+                    } else {
+                        this.groundPos.x = this.mesh.position.x;
+                        this.groundPos.z = this.mesh.position.z;
+                        this.state = 'ground';
+                        this.fallVelocity = 0;
+                        return;
+                    }
+                }
+
+                if (this.fallVelocity < 0) {
+                    this.mesh.position.y -= this.fallVelocity * dt;
+                    this.fallVelocity += CONFIG.orb.fallAccel * dt * 1.5;
+                }
+
+                this.mesh.rotation.x += dt * 5;
+                this.mesh.rotation.z += dt * 4;
+                this.glow.material.opacity = 0.15;
+            }
+
+            _updateDrawing(dt) {
+                if (this.targetDrawPos) {
+                    this.mesh.position.lerp(this.targetDrawPos, 0.06);
+                }
+                this.mesh.rotation.x += dt * 2;
+                this.mesh.rotation.y += dt * 1.5;
+                this.glow.material.opacity = 0.5;
+            }
+
+            _updateWall(dt) {
+                this.mesh.position.lerp(this.wallPos, 0.08);
+                this.mesh.position.y += Math.sin(this.phase * 0.5) * 0.0005;
+                this.mesh.rotation.y += dt * 0.5;
+                this.glow.material.opacity = 0.4 + Math.sin(this.phase * 2) * 0.1;
+            }
+
+            _handleGroundCollision() {
+                this.mesh.position.y = CONFIG.orb.groundY;
+
+                if (this.velocity.length() > 0.25) {
+                    this.velocity.y = -this.velocity.y * CONFIG.orb.bounceDecay;
+                    this.velocity.x *= 0.6;
+                    this.velocity.z *= 0.6;
+                } else {
+                    this.groundPos.x = this.mesh.position.x;
+                    this.groundPos.z = this.mesh.position.z;
+                    this.state = 'ground';
+                    this.velocity.set(0, 0, 0);
+                }
+            }
+
+            _getOrbitPosition(swarmState) {
+                const wobbleX = Math.sin(this.orbitPhase) * CONFIG.idle.wobble;
+                const wobbleZ = Math.cos(this.orbitPhase * 0.7) * CONFIG.idle.wobble;
+                const wobbleY = Math.sin(this.phase) * CONFIG.idle.bobHeight;
+
+                const scaledYOffset = this.orbitYOffset * swarmState.verticalSpread;
+                this.currentY += (swarmState.handY + scaledYOffset - this.currentY) * CONFIG.orb.yLag;
+                const totalAngle = this.orbitAngle + swarmState.swarmRotation;
+
+                const targetDist = swarmState.tightFormation ? 0.4 : this.orbitDist;
+                this.currentDist = this.currentDist || this.orbitDist;
+                this.currentDist += (targetDist - this.currentDist) * 0.05;
+
+                let baseX = Math.cos(totalAngle) * this.currentDist;
+                let baseZ = Math.sin(totalAngle) * this.currentDist;
+                let baseY = this.currentY - swarmState.handY;
+
+                const lateralPos = Math.cos(this.orbitAngle) * this.currentDist;
+                const tiltOffset = lateralPos * swarmState.orbitTilt;
+
+                const forwardPos = Math.sin(this.orbitAngle) * this.currentDist;
+                const forwardTiltOffset = forwardPos * swarmState.forwardTilt;
+
+                const flipCos = Math.cos(this.verticalFlip);
+                const flipSin = Math.sin(this.verticalFlip);
+                const flippedY = baseY * flipCos;
+                const flipOffset = baseY * flipSin;
+
+                let waveOffset = 0;
+                if (swarmState.waveActive) {
+                    waveOffset = Math.sin(swarmState.wavePhase + this.orbitAngle * 2) * 0.15;
+                }
+
+                return new THREE.Vector3(
+                    swarmState.center.x + baseX + wobbleX,
+                    swarmState.handY + flippedY + tiltOffset + forwardTiltOffset + wobbleY + Math.abs(flipOffset) * 0.3 + waveOffset,
+                    swarmState.center.z + baseZ + wobbleZ
+                );
+            }
+
+            triggerFlip() {
+                this.flipSpeed = Math.PI * 3;
+            }
+
+            updateFlip(dt) {
+                if (this.flipSpeed > 0.05) {
+                    this.verticalFlip += this.flipSpeed * dt;
+                    this.flipSpeed *= 0.92;
+                } else if (this.flipSpeed > 0) {
+                    this.flipSpeed = 0;
+                }
+            }
+
+            _applyOrbitAnim(dt, direction) {
+                this.mesh.rotation.y += dt * 1.5 * Math.sign(direction);
+                this.mesh.rotation.x += dt * 0.2;
+            }
+
+            startLifting() { if (this.state === 'ground') { this.state = 'lifting'; return true; } return false; }
+            startFalling() { if (this.state === 'orbiting' || this.state === 'lifting' || this.state === 'frozen') { this.state = 'falling'; this.fallVelocity = 0; return true; } return false; }
+            freeze() { if (this.state === 'orbiting' || this.state === 'lifting' || this.state === 'pushed' || this.state === 'exploded') { this.frozenPos.copy(this.mesh.position); this.velocity.set(0, 0, 0); this.state = 'frozen'; return true; } return false; }
+            unfreeze() { if (this.state === 'frozen') { this.state = 'orbiting'; return true; } return false; }
+
+            push(direction, force) {
+                if (this.state === 'orbiting' || this.state === 'frozen' || this.state === 'lifting') {
+                    this.velocity.copy(direction).multiplyScalar(force * (0.7 + Math.random() * 0.6));
+                    this.velocity.y += Math.random() * 2;
+                    this.state = 'pushed';
+                    return true;
+                }
+                return false;
+            }
+
+            explode(center, force) {
+                if (this.state === 'orbiting' || this.state === 'frozen' || this.state === 'lifting') {
+                    const dir = this.mesh.position.clone().sub(center).normalize();
+                    dir.y = Math.random() * 0.5 + 0.2;
+                    this.velocity.copy(dir).multiplyScalar(force * (0.5 + Math.random() * 1));
+                    this.state = 'exploded';
+                    return true;
+                }
+                return false;
+            }
+
+            pullToOrbit() {
+                if (this.state === 'ground' || this.state === 'pushed' || this.state === 'exploded' || this.state === 'falling') {
+                    this.state = 'lifting';
+                    this.velocity.set(0, 0, 0);
+                    this.fallVelocity = 0;
+                    return true;
+                }
+                return false;
+            }
+
+            formWall(wallPosition) {
+                if (this.state === 'frozen' || this.state === 'orbiting' || this.state === 'lifting') {
+                    this.wallPos.copy(wallPosition);
+                    this.state = 'wall';
+                    return true;
+                }
+                return false;
+            }
+
+            pushFromWall(direction, force) {
+                if (this.state === 'wall' || this.state === 'frozen') {
+                    this.velocity.copy(direction).multiplyScalar(force * (0.7 + Math.random() * 0.6));
+                    this.state = 'pushed';
+                    return true;
+                }
+                return false;
+            }
+
+            isOrbiting() { return this.state === 'orbiting' || this.state === 'lifting' || this.state === 'frozen'; }
+            isOnGround() { return this.state === 'ground'; }
+            isInWall() { return this.state === 'wall'; }
+            canBePushed() { return this.state === 'orbiting' || this.state === 'frozen' || this.state === 'lifting' || this.state === 'wall'; }
+        }
+
+        class Hand {
+            constructor() {
+                this.palmPos = new THREE.Vector3();
+                this.prevPalmPos = new THREE.Vector3();
+                this.palmNormal = new THREE.Vector3(0, 1, 0);
+                this.palmDirection = new THREE.Vector3(0, 0, -1);
+                this.velocity = new THREE.Vector3();
+                this.speed = 0;
+                this.fingerDist = 1;
+                this.prevFingerDist = 1;
+                this.fingerDistVelocity = 0;
+                this.indexPos = new THREE.Vector3();
+                this.prevIndexPos = new THREE.Vector3();
+                this.indexVelocity = new THREE.Vector3();
+                this.thumbPos = new THREE.Vector3();
+                this.prevThumbPos = new THREE.Vector3();
+                this.thumbVelocity = new THREE.Vector3();
+                this.middlePos = new THREE.Vector3();
+                this.prevMiddlePos = new THREE.Vector3();
+                this.middleVelocity = new THREE.Vector3();
+                this.wristRotation = new THREE.Quaternion();
+                this.ready = false;
+                this.wasFingersClosed = false;
+                this.snapDetected = false;
+                this.snapCooldownTimer = 0;
+            }
+
+            update(data, dt) {
+                if (!this.ready) {
+                    this.prevPalmPos.copy(data.palmPos);
+                    this.prevFingerDist = data.fingerDist;
+                    if (data.indexPos) this.prevIndexPos.copy(data.indexPos);
+                    if (data.thumbPos) this.prevThumbPos.copy(data.thumbPos);
+                    if (data.middlePos) this.prevMiddlePos.copy(data.middlePos);
+                    this.ready = true;
+                }
+                if (dt > 0) {
+                    this.velocity.copy(data.palmPos).sub(this.prevPalmPos).divideScalar(dt);
+                } else {
+                    this.velocity.set(0, 0, 0);
+                }
+                this.speed = this.velocity.length();
+                this.prevPalmPos.copy(this.palmPos);
+                this.palmPos.copy(data.palmPos);
+                this.palmNormal.copy(data.palmNormal);
+
+                this.fingerDistVelocity = dt > 0 ? (data.fingerDist - this.prevFingerDist) / dt : 0;
+                this.prevFingerDist = this.fingerDist;
+                this.fingerDist = data.fingerDist;
+
+                if (this.snapCooldownTimer > 0) {
+                    this.snapCooldownTimer -= dt;
+                    this.snapDetected = false;
+                } else {
+                    const wasClosed = this.wasFingersClosed;
+                    const isOpen = this.fingerDist > CONFIG.hand.snapOpenThreshold;
+                    const openingFast = this.fingerDistVelocity > CONFIG.hand.snapSpeedThreshold;
+
+                    if (wasClosed && isOpen && openingFast) {
+                        this.snapDetected = true;
+                        this.snapCooldownTimer = 0.5;
+                    } else {
+                        this.snapDetected = false;
+                    }
+
+                    this.wasFingersClosed = this.fingerDist < CONFIG.hand.snapCloseThreshold;
+                }
+
+                if (data.indexPos) {
+                    if (dt > 0) this.indexVelocity.copy(data.indexPos).sub(this.prevIndexPos).divideScalar(dt);
+                    this.prevIndexPos.copy(this.indexPos);
+                    this.indexPos.copy(data.indexPos);
+                }
+
+                if (data.thumbPos) {
+                    if (dt > 0) this.thumbVelocity.copy(data.thumbPos).sub(this.prevThumbPos).divideScalar(dt);
+                    this.prevThumbPos.copy(this.thumbPos);
+                    this.thumbPos.copy(data.thumbPos);
+                }
+
+                if (data.middlePos) {
+                    if (dt > 0) this.middleVelocity.copy(data.middlePos).sub(this.prevMiddlePos).divideScalar(dt);
+                    this.prevMiddlePos.copy(this.middlePos);
+                    this.middlePos.copy(data.middlePos);
+                }
+
+                if (data.wristQuat) {
+                    this.wristRotation.copy(data.wristQuat);
+                    this.palmDirection.set(0, 0, -1).applyQuaternion(this.wristRotation);
+                }
+            }
+
+            isPalmUp() { return this.palmNormal.y > CONFIG.hand.liftPalmThreshold; }
+            isPalmDown() { return this.palmNormal.y < CONFIG.hand.dropPalmThreshold; }
+            isMovingDown() { return this.velocity.y < -CONFIG.hand.dropSpeedThreshold; }
+            isClosed() { return this.fingerDist < CONFIG.hand.closedThreshold; }
+
+            isPushing(camDir) {
+                const flatVel = new THREE.Vector3(this.velocity.x, 0, this.velocity.z);
+                const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+                return flatVel.dot(flatCamDir) > CONFIG.hand.pushThreshold;
+            }
+
+            isPulling(camDir) {
+                const flatVel = new THREE.Vector3(this.velocity.x, 0, this.velocity.z);
+                const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+                return flatVel.dot(flatCamDir) < -CONFIG.hand.pullThreshold;
+            }
+
+            isSinglePushing(camDir) {
+                const flatVel = new THREE.Vector3(this.velocity.x, 0, this.velocity.z);
+                const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+                return flatVel.dot(flatCamDir) > CONFIG.hand.singlePushThreshold;
+            }
+
+            isSinglePulling(camDir) {
+                const flatVel = new THREE.Vector3(this.velocity.x, 0, this.velocity.z);
+                const flatCamDir = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+                return flatVel.dot(flatCamDir) < -CONFIG.hand.singlePullThreshold;
+            }
+
+            getPushDirection() {
+                return this.palmDirection.clone().normalize();
+            }
+
+            isFist() {
+                if (this.indexPos.lengthSq() < 0.001) return false;
+                const indexDist = this.indexPos.distanceTo(this.palmPos);
+                return indexDist < 0.08;
+            }
+
+            hasSnapped() {
+                return this.snapDetected;
+            }
+        }
+
+        class SwarmController {
+            constructor(sound) {
+                this.sound = sound;
+                this.hands = new Map();
+                this.isLifting = false;
+                this.isFrozen = false;
+                this.liftLostTime = null;
+                this.gestureCooldown = 0;
+                this.pushCooldown = 0;
+                this.explodeCooldown = 0;
+                this.flickCooldown = 0;
+                this.singlePushCooldown = 0;
+                this.singlePullCooldown = 0;
+                this.singleFreezeCooldown = 0;
+                this.snapCooldown = 0;
+                this.wallFormationActive = false;
+                this.postActionCooldown = 0;
+                this.needsHandReset = false;
+                this.handResetTimer = 0;
+
+                this.swarmState = {
+                    center: new THREE.Vector3(),
+                    swarmRotation: 0,
+                    handY: 1.0,
+                    orbitDirection: 1,
+                    spinMultiplier: 1.0,
+                    spreadFactor: 1.0,
+                    spreadDirection: 1,
+                    verticalSpread: 0.5,
+                    verticalSpreadDirection: 1,
+                    orbitTilt: 0,
+                    forwardTilt: 0,
+                    tightFormation: false,
+                    wavePhase: 0,
+                    waveActive: false,
+                };
+
+                this.drawMode = false;
+                this.drawEnterStart = null;
+                this.drawExitStart = null;
+                this.drawCanvas = {
+                    center: new THREE.Vector3(),
+                    forward: new THREE.Vector3(),
+                    right: new THREE.Vector3(),
+                    up: new THREE.Vector3(0, 1, 0),
+                    points: [],
+                    maxPoints: 150,
+                };
+
+                this.lastTapTime = 0;
+                this.prevFingerDist1 = 1;
+                this.prevFingerDist2 = 1;
+                this.snapCooldown = 0;
+                this.snapWindowStart = 0;
+                this.firstSnapHand = null;
+
+                this.prevHandDist = 0;
+            }
+
+            getHand(src) {
+                if (!this.hands.has(src)) this.hands.set(src, new Hand());
+                return this.hands.get(src);
+            }
+
+            extractData(frame, src, refSpace) {
+                if (!src?.hand) return null;
+                const hand = src.hand;
+                const wrist = hand.get('wrist');
+                const indexTip = hand.get('index-finger-tip');
+                const thumbTip = hand.get('thumb-tip');
+                const middleMeta = hand.get('middle-finger-metacarpal');
+                if (!wrist) return null;
+
+                const wristPose = frame.getJointPose(wrist, refSpace);
+                if (!wristPose) return null;
+
+                const wristPos = new THREE.Vector3().copy(wristPose.transform.position);
+                const wristQuat = new THREE.Quaternion().copy(wristPose.transform.orientation);
+
+                let palmPos = wristPos.clone();
+                if (middleMeta) {
+                    const metaPose = frame.getJointPose(middleMeta, refSpace);
+                    if (metaPose) palmPos.lerp(new THREE.Vector3().copy(metaPose.transform.position), 0.3);
+                }
+
+                const palmNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(wristQuat);
+
+                let fingerDist = 1;
+                if (indexTip && thumbTip) {
+                    const indexPose = frame.getJointPose(indexTip, refSpace);
+                    const thumbPose = frame.getJointPose(thumbTip, refSpace);
+                    if (indexPose && thumbPose) {
+                        fingerDist = new THREE.Vector3().copy(indexPose.transform.position)
+                            .distanceTo(new THREE.Vector3().copy(thumbPose.transform.position));
+                    }
+                }
+
+                let indexPos = null;
+                let thumbPos = null;
+                let middlePos = null;
+
+                if (indexTip) {
+                    const indexPose = frame.getJointPose(indexTip, refSpace);
+                    if (indexPose) {
+                        indexPos = new THREE.Vector3().copy(indexPose.transform.position);
+                    }
+                }
+
+                if (thumbTip) {
+                    const thumbPose = frame.getJointPose(thumbTip, refSpace);
+                    if (thumbPose) {
+                        thumbPos = new THREE.Vector3().copy(thumbPose.transform.position);
+                    }
+                }
+
+                const middleTip = hand.get('middle-finger-tip');
+                if (middleTip) {
+                    const middlePose = frame.getJointPose(middleTip, refSpace);
+                    if (middlePose) {
+                        middlePos = new THREE.Vector3().copy(middlePose.transform.position);
+                    }
+                }
+
+                return { palmPos, palmNormal, fingerDist, indexPos, thumbPos, middlePos, wristQuat };
+            }
+
+            process(frame, session, refSpace, orbs, dt, camera) {
+                if (!session.inputSources) return;
+
+                if (this.gestureCooldown > 0) this.gestureCooldown -= dt;
+                if (this.pushCooldown > 0) this.pushCooldown -= dt;
+                if (this.explodeCooldown > 0) this.explodeCooldown -= dt;
+                if (this.flickCooldown > 0) this.flickCooldown -= dt;
+                if (this.snapCooldown > 0) this.snapCooldown -= dt;
+                if (this.singlePushCooldown > 0) this.singlePushCooldown -= dt;
+                if (this.singlePullCooldown > 0) this.singlePullCooldown -= dt;
+                if (this.singleFreezeCooldown > 0) this.singleFreezeCooldown -= dt;
+                if (this.postActionCooldown > 0) this.postActionCooldown -= dt;
+
+                if (this.swarmState.waveActive) {
+                    this.swarmState.wavePhase += dt * 8;
+                    if (this.swarmState.wavePhase > Math.PI * 6) {
+                        this.swarmState.waveActive = false;
+                        this.swarmState.wavePhase = 0;
+                    }
+                }
+
+                const camPos = new THREE.Vector3();
+                camera.getWorldPosition(camPos);
+                this.swarmState.center.lerp(camPos, CONFIG.orb.centerLag);
+
+                const camDir = new THREE.Vector3();
+                camera.getWorldDirection(camDir);
+                const camRight = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
+                const targetRotation = -Math.atan2(camDir.x, camDir.z);
+
+                let rotDiff = targetRotation - this.swarmState.swarmRotation;
+                while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                this.swarmState.swarmRotation += rotDiff * 0.03;
+
+                const activeHands = [];
+                let leftHand = null, rightHand = null;
+                for (const src of session.inputSources) {
+                    const data = this.extractData(frame, src, refSpace);
+                    if (!data) continue;
+                    const hand = this.getHand(src);
+                    hand.update(data, dt);
+                    hand.handedness = src.handedness;
+                    activeHands.push(hand);
+                    if (src.handedness === 'left') leftHand = hand;
+                    if (src.handedness === 'right') rightHand = hand;
+                }
+
+                if (activeHands.length < 2) {
+                    if (this.isLifting && !this.isFrozen) {
+                        if (!this.liftLostTime) {
+                            this.liftLostTime = performance.now();
+                        } else if (performance.now() - this.liftLostTime > 3000) {
+                            let dropped = false;
+                            for (const orb of orbs) { if (orb.startFalling()) dropped = true; }
+                            if (dropped) {
+                                this.isLifting = false;
+                                this.liftLostTime = null;
+                                this.sound.play('drop'); this.sound.stopHum();
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                const h1 = activeHands[0], h2 = activeHands[1];
+
+                const allOnGround = orbs.every(o => o.state === 'ground');
+                if (allOnGround && !this.isLifting) {
+                    this.needsHandReset = false;
+                    this.handResetTimer = 0;
+                    this.postActionCooldown = 0;
+                    this.isFrozen = false;
+                    this.pushCooldown = 0;
+                    this.explodeCooldown = 0;
+                }
+                if (this.needsHandReset) {
+                    const h1ReallyDown = h1.palmNormal.y < -0.5;
+                    const h2ReallyDown = h2.palmNormal.y < -0.5;
+                    if (h1ReallyDown && h2ReallyDown) {
+                        this.handResetTimer += dt;
+                        if (this.handResetTimer > 0.8) {
+                            this.needsHandReset = false;
+                            this.handResetTimer = 0;
+                        }
+                    } else {
+                        this.handResetTimer = 0;
+                    }
+                }
+                this.swarmState.handY = (h1.palmPos.y + h2.palmPos.y) / 2;
+                const handDist = h1.palmPos.distanceTo(h2.palmPos);
+
+                if (this.drawMode) {
+                    const bothFist = h1.isFist() && h2.isFist();
+
+                    if (bothFist) {
+                        if (!this.drawExitStart) this.drawExitStart = performance.now();
+                        if (performance.now() - this.drawExitStart > 1000) {
+                            this.drawMode = false;
+                            this.drawExitStart = null;
+                            const drawOrbs = orbs.filter(o => o.state === 'drawing');
+                            const numDraw = drawOrbs.length;
+                            drawOrbs.forEach((orb, i) => {
+                                orb.state = 'orbiting';
+                                orb.targetDrawPos = null;
+                                orb.verticalFlip = 0;
+                                orb.flipSpeed = 0;
+                                orb.orbitAngle = (i / numDraw) * Math.PI * 2 + Math.random() * 0.3;
+                                orb.orbitDistance = CONFIG.orb.orbitMinDist + Math.random() * (CONFIG.orb.orbitMaxDist - CONFIG.orb.orbitMinDist);
+                                orb.currentY = this.swarmState.center.y + (Math.random() - 0.5) * 0.6;
+                            });
+                            for (const orb of orbs) {
+                                orb.mesh.visible = true;
+                                orb.glow.visible = true;
+                            }
+                            this.sound.play('drawExit'); this.sound.startHum();
+                            this.prevHandDist = handDist;
+                            return;
+                        }
+                    } else {
+                        this.drawExitStart = null;
+                    }
+
+                } else {
+                    const thumbsTouching = h1.thumbPos.lengthSq() > 0.001 && h2.thumbPos.lengthSq() > 0.001 &&
+                        h1.thumbPos.distanceTo(h2.thumbPos) < 0.15;
+
+                    if (thumbsTouching && orbs.some(o => o.isOrbiting())) {
+                        if (!this.drawEnterStart) this.drawEnterStart = performance.now();
+                        if (performance.now() - this.drawEnterStart > 1000) {
+                            this.drawMode = true;
+                            this.drawEnterStart = null;
+                            this.drawCanvas.center.copy(camPos).addScaledVector(camDir, 2.0);
+                            this.drawCanvas.forward.copy(camDir);
+                            this.drawCanvas.right.crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
+                            this.sound.play('drawEnter'); this.sound.stopHum();
+                        }
+                    } else {
+                        this.drawEnterStart = null;
+                    }
+                }
+
+                if (this.drawMode) {
+                    const PROJ_DIST = 2.0;
+                    const SCALE = 2.5;
+                    const jointPositions = [];
+
+                    const jointNames = [
+                        'wrist',
+                        'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip',
+                        'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip',
+                        'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip',
+                        'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip',
+                        'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'
+                    ];
+
+                    for (const src of session.inputSources) {
+                        if (!src.hand) continue;
+                        for (const jointName of jointNames) {
+                            const joint = src.hand.get(jointName);
+                            if (!joint) continue;
+                            const pose = frame.getJointPose(joint, refSpace);
+                            if (!pose) continue;
+
+                            const jointPos = new THREE.Vector3().copy(pose.transform.position);
+                            const offset = jointPos.clone().sub(camPos);
+
+                            const camUp = new THREE.Vector3(0, 1, 0);
+                            const camRight = new THREE.Vector3().crossVectors(camDir, camUp).normalize();
+
+                            const localX = offset.dot(camRight) * SCALE;
+                            const localY = offset.y * SCALE;
+
+                            const projected = camPos.clone()
+                                .addScaledVector(camDir, PROJ_DIST)
+                                .addScaledVector(camRight, localX)
+                                .add(new THREE.Vector3(0, localY, 0));
+
+                            jointPositions.push(projected);
+                        }
+                    }
+
+                    if (jointPositions.length > 0) {
+                        const orbsInDraw = orbs.filter(o => o.isOrbiting() || o.state === 'drawing');
+                        const numJoints = jointPositions.length;
+
+                        for (let i = 0; i < orbsInDraw.length; i++) {
+                            const orb = orbsInDraw[i];
+
+                            if (i < numJoints) {
+                                orb.state = 'drawing';
+                                orb.mesh.visible = true;
+                                orb.glow.visible = true;
+                                orb.targetDrawPos = jointPositions[i].clone();
+                            } else {
+                                orb.state = 'drawing';
+                                orb.mesh.visible = false;
+                                orb.glow.visible = false;
+                            }
+                        }
+                    }
+
+                    this.prevHandDist = handDist;
+                    return;
+                }
+
+                const bothPalmsUp = h1.isPalmUp() && h2.isPalmUp();
+                const bothPalmsDown = h1.isPalmDown() && h2.isPalmDown();
+                const bothMovingDown = h1.isMovingDown() && h2.isMovingDown();
+                const bothClosed = h1.isClosed() && h2.isClosed();
+                const bothPushing = h1.isPushing(camDir) && h2.isPushing(camDir);
+                const bothPulling = h1.isPulling(camDir) && h2.isPulling(camDir);
+
+                const spreadSpeed = dt > 0 ? (handDist - this.prevHandDist) / dt : 0;
+                const anyOrbiting = orbs.some(o => o.isOrbiting());
+                const anyActive = orbs.some(o => o.isOrbiting() || o.state === 'pushed' || o.state === 'exploded');
+
+                if (bothClosed && anyActive && !this.isFrozen) {
+                    let froze = false;
+                    for (const orb of orbs) { if (orb.freeze()) froze = true; }
+                    if (froze) {
+                        this.isFrozen = true;
+                        this.liftLostTime = null;
+                        this.sound.play('freeze'); this.sound.stopHum();
+                    }
+                } else if (!bothClosed && this.isFrozen) {
+                    if (bothPalmsDown) {
+                        let dropped = false;
+                        for (const orb of orbs) { if (orb.startFalling()) dropped = true; }
+                        if (dropped) {
+                            this.isFrozen = false;
+                            this.isLifting = false;
+                            this.wallFormationActive = false;
+                            this.sound.play('drop'); this.sound.stopHum();
+                        }
+                    } else if (bothPalmsUp) {
+                        let unfroze = false;
+                        for (const orb of orbs) { if (orb.unfreeze()) unfroze = true; }
+                        if (unfroze) {
+                            this.isFrozen = false;
+                            this.liftLostTime = null;
+                            this.sound.play('lift'); this.sound.startHum();
+                        }
+                    }
+                }
+
+                if (spreadSpeed > CONFIG.hand.explodeThreshold && this.explodeCooldown <= 0) {
+                    const center = this.swarmState.center.clone();
+                    const velocityMultiplier = Math.min(spreadSpeed / CONFIG.hand.explodeThreshold, 3.0);
+                    const dynamicForce = CONFIG.orb.explodeForce * (0.5 + velocityMultiplier * 0.5);
+                    let exploded = false;
+                    for (const orb of orbs) {
+                        if (orb.isOrbiting() && orb.explode(center, dynamicForce)) exploded = true;
+                    }
+                    if (exploded) {
+                        this.isLifting = false;
+                        this.isFrozen = false;
+                        this.explodeCooldown = CONFIG.timing.explodeCooldown;
+                        this.postActionCooldown = 2.5;
+                        this.needsHandReset = true;
+                        this.handResetTimer = 0;
+                        this.sound.play('explode'); this.sound.stopHum();
+                        this.prevHandDist = handDist;
+                        return;
+                    }
+                }
+
+                const avgHandSpeed = (h1.speed + h2.speed) / 2;
+                if (bothPushing && this.pushCooldown <= 0 && avgHandSpeed > 1.0) {
+                    const dir1 = h1.getPushDirection();
+                    const dir2 = h2.getPushDirection();
+                    const pushDir = dir1.clone().add(dir2).multiplyScalar(0.5).normalize();
+                    pushDir.y += 0.1;
+                    pushDir.normalize();
+                    const velocityMultiplier = Math.min(avgHandSpeed / 1.5, 2.5);
+                    const dynamicForce = CONFIG.orb.pushForce * (0.4 + velocityMultiplier * 0.4);
+                    let pushed = false;
+                    for (const orb of orbs) {
+                        if (orb.isOrbiting() && orb.push(pushDir, dynamicForce)) {
+                            pushed = true;
+                        }
+                    }
+                    if (pushed) {
+                        this.isLifting = false;
+                        this.isFrozen = false;
+                        this.pushCooldown = CONFIG.timing.pushCooldown;
+                        this.postActionCooldown = 1.5;
+                        this.needsHandReset = true;
+                        this.handResetTimer = 0;
+                        this.sound.play('push'); this.sound.stopHum();
+                        this.prevHandDist = handDist;
+                        return;
+                    }
+                }
+
+                if (bothPulling && this.pushCooldown <= 0 && this.explodeCooldown <= 0) {
+                    let pulled = false;
+                    for (const orb of orbs) { if (orb.pullToOrbit()) pulled = true; }
+                    if (pulled) {
+                        this.isLifting = true;
+                        this.liftLostTime = null;
+                        this.needsHandReset = false;
+                        this.postActionCooldown = 0;
+                        this.pushCooldown = CONFIG.timing.pushCooldown;
+                        this.sound.play('pull'); this.sound.startHum();
+                    }
+                }
+
+                if (bothPalmsDown && bothMovingDown && this.isLifting && this.gestureCooldown <= 0) {
+                    let dropped = false;
+                    for (const orb of orbs) { if (orb.startFalling()) dropped = true; }
+                    if (dropped) {
+                        this.isLifting = false;
+                        this.isFrozen = false;
+                        this.gestureCooldown = CONFIG.timing.gestureCooldown;
+                        this.sound.play('drop'); this.sound.stopHum();
+                        this.prevHandDist = handDist;
+                        return;
+                    }
+                }
+
+                if (bothPalmsUp && !this.isFrozen) {
+                    this.liftLostTime = null;
+                    const anyOnGround = orbs.some(o => o.state === 'ground');
+                    if (anyOnGround && !this.isLifting) {
+                        this.swarmState.center.copy(camPos);
+                        let lifted = false;
+                        for (const orb of orbs) { if (orb.startLifting()) lifted = true; }
+                        if (lifted) {
+                            this.isLifting = true;
+                            this.needsHandReset = false;
+                            this.postActionCooldown = 0;
+                            this.sound.play('lift');
+                            this.sound.startHum();
+                        }
+                    }
+                } else if (!bothPalmsUp && this.isLifting && !this.isFrozen) {
+                    const handsGoingDown = h1.isMovingDown() || h2.isMovingDown();
+                    const handsFacingDown = h1.isPalmDown() || h2.isPalmDown();
+
+                    if (handsGoingDown || handsFacingDown) {
+                        if (!this.liftLostTime) {
+                            this.liftLostTime = performance.now();
+                        } else if (performance.now() - this.liftLostTime > 2000) {
+                            let dropped = false;
+                            for (const orb of orbs) { if (orb.startFalling()) dropped = true; }
+                            if (dropped) {
+                                this.isLifting = false;
+                                this.liftLostTime = null;
+                                this.gestureCooldown = CONFIG.timing.gestureCooldown;
+                                this.sound.play('drop'); this.sound.stopHum();
+                            }
+                        }
+                    } else {
+                        this.liftLostTime = null;
+                    }
+                }
+
+                if (anyOrbiting && !this.isFrozen) {
+                    const targetSpread = Math.max(0.4, Math.min(5.0, handDist / 0.35));
+                    this.swarmState.spreadFactor += (targetSpread - this.swarmState.spreadFactor) * 0.15;
+
+                    if (h1.palmPos && h2.palmPos) {
+                        const h1Lateral = h1.palmPos.clone().sub(camPos).dot(camRight);
+                        const h2Lateral = h2.palmPos.clone().sub(camPos).dot(camRight);
+                        const leftHandY = h1Lateral < h2Lateral ? h1.palmPos.y : h2.palmPos.y;
+                        const rightHandY = h1Lateral < h2Lateral ? h2.palmPos.y : h1.palmPos.y;
+                        const yDiff = leftHandY - rightHandY;
+                        const targetTilt = Math.max(-0.6, Math.min(0.6, yDiff * 2.5));
+                        this.swarmState.orbitTilt += (targetTilt - this.swarmState.orbitTilt) * 0.08;
+
+                        const h1Forward = h1.palmPos.clone().sub(camPos).dot(camDir);
+                        const h2Forward = h2.palmPos.clone().sub(camPos).dot(camDir);
+                        const avgForward = (h1Forward + h2Forward) / 2;
+                        const neutralForward = 0.4;
+                        const forwardDiff = avgForward - neutralForward;
+                        const targetForwardTilt = Math.max(-0.5, Math.min(0.5, forwardDiff * 1.5));
+                        this.swarmState.forwardTilt += (targetForwardTilt - this.swarmState.forwardTilt) * 0.06;
+                    }
+
+                    const midpoint = h1.palmPos.clone().add(h2.palmPos).multiplyScalar(0.5);
+
+                    if (this.flickCooldown <= 0) {
+                        const h1ToCenter = midpoint.clone().sub(h1.palmPos).normalize();
+                        const h2ToCenter = midpoint.clone().sub(h2.palmPos).normalize();
+
+                        if (h1.indexPos && h2.indexPos) {
+                            const h1IndexInward = h1.indexVelocity.dot(h1ToCenter);
+                            const h2IndexInward = h2.indexVelocity.dot(h2ToCenter);
+
+                            if (h1IndexInward > CONFIG.hand.indexFlickThreshold &&
+                                h2IndexInward > CONFIG.hand.indexFlickThreshold) {
+                                this.swarmState.verticalSpread += 0.3 * this.swarmState.verticalSpreadDirection;
+                                if (this.swarmState.verticalSpread >= 3.0) {
+                                    this.swarmState.verticalSpread = 3.0;
+                                    this.swarmState.verticalSpreadDirection = -1;
+                                } else if (this.swarmState.verticalSpread <= 0.1) {
+                                    this.swarmState.verticalSpread = 0.1;
+                                    this.swarmState.verticalSpreadDirection = 1;
+                                }
+                                this.flickCooldown = CONFIG.timing.flickCooldown;
+                            }
+                        }
+
+                        if (h1.thumbPos && h2.thumbPos) {
+                            const h1ThumbInward = h1.thumbVelocity.dot(h1ToCenter);
+                            const h2ThumbInward = h2.thumbVelocity.dot(h2ToCenter);
+
+                            if (h1ThumbInward > CONFIG.hand.indexFlickThreshold &&
+                                h2ThumbInward > CONFIG.hand.indexFlickThreshold) {
+                                this.swarmState.spinMultiplier = Math.min(this.swarmState.spinMultiplier * 1.5, 10.0);
+                                this.flickCooldown = CONFIG.timing.flickCooldown * 0.5;
+                            }
+                        }
+
+                        if (h1.middlePos && h2.middlePos) {
+                            const h1MiddleInward = h1.middleVelocity.dot(h1ToCenter);
+                            const h2MiddleInward = h2.middleVelocity.dot(h2ToCenter);
+
+                            if (h1MiddleInward > CONFIG.hand.indexFlickThreshold &&
+                                h2MiddleInward > CONFIG.hand.indexFlickThreshold) {
+                                this.swarmState.spinMultiplier = Math.max(this.swarmState.spinMultiplier * 0.6, 0.2);
+                                this.flickCooldown = CONFIG.timing.flickCooldown * 0.5;
+                            }
+                        }
+                    }
+
+                    const h1Lateral = h1.velocity.dot(camRight);
+                    const h2Lateral = h2.velocity.dot(camRight);
+                    const avgHorizontalVel = (h1Lateral + h2Lateral) / 2;
+                    const absVel = Math.abs(avgHorizontalVel);
+
+                    if (absVel > CONFIG.hand.spinChangeThreshold) {
+                        const swipeDir = avgHorizontalVel > 0 ? 1 : -1;
+                        if (swipeDir !== this.swarmState.orbitDirection) {
+                            this.swarmState.orbitDirection = swipeDir;
+                        }
+                    }
+
+                    this.swarmState.spinMultiplier = Math.max(0.2, Math.min(10.0, this.swarmState.spinMultiplier));
+
+                    this.prevFingerDist1 = h1.fingerDist;
+                    this.prevFingerDist2 = h2.fingerDist;
+                }
+
+                this.prevHandDist = handDist;
+            }
+
+            reset() {
+                this.hands.clear();
+                this.isLifting = false;
+                this.isFrozen = false;
+                this.wallFormationActive = false;
+                this.swarmState.orbitDirection = 1;
+                this.swarmState.spinMultiplier = 1.0;
+                this.swarmState.spreadFactor = 1.0;
+                this.swarmState.spreadDirection = 1;
+                this.swarmState.verticalSpread = 0.5;
+                this.swarmState.verticalSpreadDirection = 1;
+                this.swarmState.orbitTilt = 0;
+                this.swarmState.forwardTilt = 0;
+                this.swarmState.tightFormation = false;
+                this.swarmState.waveActive = false;
+                this.swarmState.wavePhase = 0;
+            }
+        }
+
+        class XRManager {
+            constructor(renderer) {
+                this.renderer = renderer;
+                this.session = null;
+                this.refSpace = null;
+            }
+
+            async checkSupport() {
+                if (!('xr' in navigator)) return { ok: false };
+                const ar = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+                const vr = await navigator.xr.isSessionSupported('immersive-vr').catch(() => false);
+                if (ar) return { ok: true, mode: 'immersive-ar' };
+                if (vr) return { ok: true, mode: 'immersive-vr' };
+                return { ok: false };
+            }
+
+            async start(mode, onEnd) {
+                try {
+                    this.session = await navigator.xr.requestSession(mode, {
+                        requiredFeatures: ['local-floor', 'hand-tracking'],
+                    });
+                    await this.renderer.xr.setSession(this.session);
+                    this.refSpace = this.renderer.xr.getReferenceSpace();
+                    this.session.addEventListener('end', () => {
+                        this.session = null;
+                        this.refSpace = null;
+                        onEnd?.();
+                    });
+                    return true;
+                } catch (e) { return false; }
+            }
+        }
+
+        class App {
+            constructor() {
+                this.lastTime = 0;
+                this.orbs = [];
+                this.sound = new SoundManager();
+                this.init();
+            }
+
+            init() {
+                this.scene = new THREE.Scene();
+                this.scene.background = null;
+                this.useImmersiveVR = false;
+                this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.01, 100);
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+                this.renderer.setSize(innerWidth, innerHeight);
+                this.renderer.xr.enabled = true;
+                this.renderer.xr.setReferenceSpaceType('local-floor');
+                this.renderer.setClearColor(0x000000, 0);
+                document.body.appendChild(this.renderer.domElement);
+
+                const skyGeo = new THREE.SphereGeometry(80, 32, 32);
+                const skyMat = new THREE.ShaderMaterial({
+                    side: THREE.BackSide,
+                    vertexShader: `
+                        varying vec3 vPos;
+                        void main() {
+                            vPos = position;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vPos;
+                        void main() {
+                            float y = (vPos.y + 80.0) / 160.0;
+                            vec3 top = vec3(0.02, 0.01, 0.08);
+                            vec3 bot = vec3(0.0, 0.0, 0.02);
+                            gl_FragColor = vec4(mix(bot, top, y), 1.0);
+                        }
+                    `
+                });
+                this.vrSky = new THREE.Mesh(skyGeo, skyMat);
+                this.vrSky.visible = false;
+                this.scene.add(this.vrSky);
+
+                const gridGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
+                const gridMat = new THREE.ShaderMaterial({
+                    transparent: true,
+                    vertexShader: `
+                        varying vec2 vUv;
+                        varying vec3 vWorldPos;
+                        void main() {
+                            vUv = uv;
+                            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                            vWorldPos = worldPos.xyz;
+                            gl_Position = projectionMatrix * viewMatrix * worldPos;
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec2 vUv;
+                        varying vec3 vWorldPos;
+                        void main() {
+                            vec2 gridPos = vWorldPos.xz;
+                            float lineWidth = 0.03;
+                            float gridSize = 1.0;
+                            vec2 grid = abs(fract(gridPos / gridSize - 0.5) - 0.5) / fwidth(gridPos / gridSize);
+                            float line = min(grid.x, grid.y);
+                            float alpha = 1.0 - min(line, 1.0);
+                            float dist = length(vWorldPos.xz);
+                            float fade = 1.0 - smoothstep(5.0, 40.0, dist);
+                            vec3 col = vec3(0.4, 0.3, 0.9);
+                            gl_FragColor = vec4(col, alpha * fade * 0.6);
+                        }
+                    `
+                });
+                this.vrGrid = new THREE.Mesh(gridGeo, gridMat);
+                this.vrGrid.rotation.x = -Math.PI / 2;
+                this.vrGrid.position.y = 0.001;
+                this.vrGrid.visible = false;
+                this.scene.add(this.vrGrid);
+
+                this.handMeshes = { left: [], right: [] };
+                this.handLines = { left: null, right: null };
+                this.setupHandMeshes();
+
+                this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
+                const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+                dir.position.set(2, 4, 1);
+                this.scene.add(dir);
+
+                for (let i = 0; i < CONFIG.orb.count; i++) {
+                    const angle = (i / CONFIG.orb.count) * Math.PI * 2;
+                    const r = CONFIG.orb.spawnRadius * (0.2 + Math.random() * 0.8);
+                    const pos = new THREE.Vector3(
+                        Math.cos(angle) * r,
+                        CONFIG.orb.groundY,
+                        Math.sin(angle) * r - 0.3
+                    );
+                    this.orbs.push(new Orb(this.scene, i, pos));
+                }
+
+                this.xr = new XRManager(this.renderer);
+                this.swarm = new SwarmController(this.sound);
+                this.renderer.setAnimationLoop((t, f) => this.render(t, f));
+
+                addEventListener('resize', () => {
+                    this.camera.aspect = innerWidth / innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(innerWidth, innerHeight);
+                });
+            }
+
+            setupHandMeshes() {
+                const jointNames = [
+                    'wrist',
+                    'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip',
+                    'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip',
+                    'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip',
+                    'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip',
+                    'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'
+                ];
+                this.jointNames = jointNames;
+
+                const jointGeo = new THREE.SphereGeometry(0.008, 8, 8);
+                const leftMat = new THREE.MeshStandardMaterial({ color: 0x667eea, emissive: 0x667eea, emissiveIntensity: 0.3 });
+                const rightMat = new THREE.MeshStandardMaterial({ color: 0xff6b9d, emissive: 0xff6b9d, emissiveIntensity: 0.3 });
+
+                for (const side of ['left', 'right']) {
+                    const mat = side === 'left' ? leftMat : rightMat;
+                    for (let i = 0; i < jointNames.length; i++) {
+                        const sphere = new THREE.Mesh(jointGeo, mat);
+                        sphere.visible = false;
+                        this.scene.add(sphere);
+                        this.handMeshes[side].push(sphere);
+                    }
+                }
+            }
+
+            updateHandMeshes(frame, session, refSpace) {
+                if (!this.useImmersiveVR || !session.inputSources) {
+                    for (const side of ['left', 'right']) {
+                        this.handMeshes[side].forEach(m => m.visible = false);
+                    }
+                    return;
+                }
+
+                const handSources = { left: null, right: null };
+                for (const src of session.inputSources) {
+                    if (src.hand && src.handedness) {
+                        handSources[src.handedness] = src;
+                    }
+                }
+
+                for (const side of ['left', 'right']) {
+                    const src = handSources[side];
+                    if (!src || !src.hand) {
+                        this.handMeshes[side].forEach(m => m.visible = false);
+                        continue;
+                    }
+
+                    for (let i = 0; i < this.jointNames.length; i++) {
+                        const joint = src.hand.get(this.jointNames[i]);
+                        if (!joint) {
+                            this.handMeshes[side][i].visible = false;
+                            continue;
+                        }
+                        const pose = frame.getJointPose(joint, refSpace);
+                        if (!pose) {
+                            this.handMeshes[side][i].visible = false;
+                            continue;
+                        }
+
+                        const p = pose.transform.position;
+                        this.handMeshes[side][i].position.set(p.x, p.y, p.z);
+                        this.handMeshes[side][i].visible = true;
+                    }
+                }
+            }
+
+            render(time, frame) {
+                const dt = Math.min((time - this.lastTime) * 0.001, 0.1);
+                this.lastTime = time;
+
+                if (frame && this.xr.session && this.xr.refSpace) {
+                    this.swarm.process(frame, this.xr.session, this.xr.refSpace, this.orbs, dt, this.camera);
+                    for (const orb of this.orbs) {
+                        orb.update(dt, this.swarm.swarmState);
+                    }
+
+                    const ss = this.swarm.swarmState;
+                    this.sound.updateHum(ss.spinMultiplier * ss.orbitDirection, ss.spreadFactor);
+
+                    this.updateHandMeshes(frame, this.xr.session, this.xr.refSpace);
+                }
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            async start(forceVR = false) {
+                await this.sound.init();
+                this.useImmersiveVR = forceVR;
+
+                if (forceVR) {
+                    this.vrSky.visible = true;
+                    this.vrGrid.visible = true;
+                    this.scene.background = new THREE.Color(0x000005);
+                } else {
+                    this.vrSky.visible = false;
+                    this.vrGrid.visible = false;
+                    this.scene.background = null;
+                }
+
+                const mode = forceVR ? 'immersive-vr' : 'immersive-ar';
+                const supported = await navigator.xr.isSessionSupported(mode).catch(() => false);
+                if (!supported) return false;
+
+                return await this.xr.start(mode, () => {
+                    this.swarm.reset();
+                    this.vrSky.visible = false;
+                    this.vrGrid.visible = false;
+                    for (const side of ['left', 'right']) {
+                        this.handMeshes[side].forEach(m => m.visible = false);
+                    }
+                    document.getElementById('landing').classList.remove('hidden');
+                    document.getElementById('gesture-hint').classList.add('hidden');
+                });
+            }
+        }
+
+        const landingEl = document.getElementById('landing');
+        const statusEl = document.getElementById('status');
+        const buttonEl = document.getElementById('enter-xr');
+        const hintEl = document.getElementById('gesture-hint');
+
+        let app = null;
+
+        let selectedMode = 'ar';
+
+        async function init() {
+            if (!('xr' in navigator)) {
+                statusEl.textContent = 'WebXR not supported';
+                buttonEl.style.display = 'none';
+                return;
+            }
+
+            const ar = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+            const vr = await navigator.xr.isSessionSupported('immersive-vr').catch(() => false);
+
+            const modeToggle = document.getElementById('mode-toggle');
+            const toggleSwitch = document.getElementById('toggle-switch');
+            const modeAr = document.getElementById('mode-ar');
+            const modeVr = document.getElementById('mode-vr');
+
+            if (ar && vr) {
+                modeToggle.style.display = 'flex';
+                statusEl.textContent = 'Choose your mode';
+
+                toggleSwitch.onclick = () => {
+                    if (selectedMode === 'ar') {
+                        selectedMode = 'vr';
+                        toggleSwitch.classList.add('vr');
+                        modeAr.classList.remove('active');
+                        modeVr.classList.add('active');
+                        statusEl.textContent = 'Immersive VR Mode';
+                    } else {
+                        selectedMode = 'ar';
+                        toggleSwitch.classList.remove('vr');
+                        modeAr.classList.add('active');
+                        modeVr.classList.remove('active');
+                        statusEl.textContent = 'Passthrough Mode';
+                    }
+                };
+
+                modeAr.onclick = () => {
+                    if (selectedMode !== 'ar') toggleSwitch.click();
+                };
+                modeVr.onclick = () => {
+                    if (selectedMode !== 'vr') toggleSwitch.click();
+                };
+
+            } else if (ar || vr) {
+                statusEl.textContent = ar ? 'Passthrough Mode Ready' : 'VR Mode Ready';
+                selectedMode = ar ? 'ar' : 'vr';
+            } else {
+                statusEl.textContent = 'WebXR not supported';
+                buttonEl.style.display = 'none';
+                return;
+            }
+
+            buttonEl.onclick = async () => {
+                if (!app) app = new App();
+                const forceVR = selectedMode === 'vr';
+                if (await app.start(forceVR)) {
+                    landingEl.classList.add('hidden');
+                    hintEl.classList.remove('hidden');
+                }
+            };
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
